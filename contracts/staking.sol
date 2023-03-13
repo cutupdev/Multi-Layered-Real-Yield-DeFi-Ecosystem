@@ -240,10 +240,12 @@ contract Staking is Ownable{
     }
 
     function setPeriod(uint256 _newPeriod) external onlyOwner {
+        require(_newPeriod <= 6 hours, "Exceed the Period Limit");
         period = _newPeriod;
     }
 
     function setSlowPeriod(uint256 _newSlowPeriod) external onlyOwner {
+        require(_newSlowPeriod <= 12 hours, "Exceed the Slow Period Limit");
         slowPeriod = _newSlowPeriod;
     }
 

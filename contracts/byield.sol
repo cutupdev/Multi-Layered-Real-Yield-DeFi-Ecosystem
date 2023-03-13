@@ -98,9 +98,7 @@ contract bYieldzToken is ERC20, Ownable {
         }
 
         if (yzRemainAmount > 0) {
-            swapTokensForEth(yzRemainAmount);
-            uint256 newBalance = address(this).balance;
-            payable(treasury).transfer(newBalance);
+            swapTokensForShdw(yzRemainAmount);
         }
 
         IERC20(yzToken).transfer(msg.sender, yzAmount);
@@ -168,21 +166,20 @@ contract bYieldzToken is ERC20, Ownable {
 
     }
 
-    function swapTokensForEth(uint256 tokenAmount) private {
+    function swapTokensForShdw(uint256 tokenAmount) private {
         swapping = true;
 
-        address[] memory path = new address[](3);
+        address[] memory path = new address[](2);
         path[0] = yzToken;
         path[1] = shdwAddress;
-        path[2] = uniswapV2Router.WETH();
 
         IERC20(yzToken).approve(address(uniswapV2Router), tokenAmount);
 
-        uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             tokenAmount,
             0,
             path,
-            address(this),
+            treasury,
             block.timestamp
         );
         swapping = false;
@@ -197,6 +194,7 @@ contract bYieldzToken is ERC20, Ownable {
     }
 
     function setSlowPeriod(uint256 _newSlowPeriod) external onlyOwner {
+        require(_newSlowPeriod <= 12 hours, "Exceed the Slow Period Limit");
         slowPeriod = _newSlowPeriod;
     }
 
@@ -214,6 +212,7 @@ contract bYieldzToken is ERC20, Ownable {
 
     // Set the reward getting period
     function setPeriod(uint256 _newPeriod) external onlyOwner{
+        require(_newPeriod <= 6 hours, "Exceed the Period Limit");
         period = _newPeriod;
     }
 
@@ -223,8 +222,11 @@ contract bYieldzToken is ERC20, Ownable {
         slowPeriod = 12 hours;
     }
 
-
     function setShdwAddress(address _newAddr) external onlyOwner {
+        require(
+            _newAddr != address(0),
+            "Invalid to set the new shadow address"
+        );
         shdwAddress = _newAddr;
     }
    
